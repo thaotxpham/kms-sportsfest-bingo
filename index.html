@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KMS Sports Fest 5 — Action Bingo</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+:root {
+  --navy:#0A2E5C; --blue:#2E7EC9; --teal:#17C3B2; --green:#2EA744;
+  --orange:#FF6B1A; --red:#E63946; --purple:#6B3FA0; --gold:#FFB347;
+  --bg:#f0f4fb; --card:#fff; --text:#1A1A2E; --muted:#6b7280; --border:#dde4f0;
+  --easy:#2EA744; --easy-bg:#edf7f0; --easy-border:#b7e4c7;
+  --med:#2E7EC9;  --med-bg:#e8f2fb;  --med-border:#9ecef5;
+  --hard:#E63946; --hard-bg:#fdeaea; --hard-border:#f5b3b8;
+}
+body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding:0 0 60px; }
+.stripe { display:flex; height:6px; }
+.stripe span { flex:1; }
+
+.page-header { background:var(--navy); padding:36px 24px 32px; text-align:center; position:relative; overflow:hidden; }
+.page-header::before { content:''; position:absolute; top:-60px; right:-80px; width:260px; height:260px; border-radius:50%; background:rgba(255,255,255,0.04); }
+.eyebrow { font-size:11px; font-weight:600; letter-spacing:5px; text-transform:uppercase; color:var(--gold); margin-bottom:10px; }
+.page-header h1 { font-family:'Bebas Neue',sans-serif; font-size:clamp(42px,8vw,68px); letter-spacing:2px; color:#fff; line-height:1; margin-bottom:6px; }
+.page-header h1 span { color:var(--orange); }
+.page-header p { font-size:15px; color:rgba(255,255,255,0.65); max-width:420px; margin:0 auto; line-height:1.6; }
+
+.section { max-width:560px; margin:24px auto 0; padding:0 20px; }
+.card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:24px; }
+.step-list { list-style:none; display:flex; flex-direction:column; gap:10px; }
+.step-list li { display:flex; gap:12px; align-items:flex-start; font-size:14px; line-height:1.5; }
+.step-num { min-width:24px; height:24px; border-radius:50%; background:var(--navy); color:#fff; font-size:11px; font-weight:600; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; }
+.prize-badge { display:inline-flex; align-items:center; gap:6px; background:#fff8ec; border:1px solid #ffe0a0; border-radius:8px; padding:8px 14px; font-size:13px; font-weight:500; color:#7a4f00; margin-top:14px; }
+
+.legend-row { display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
+.diff-badge { display:inline-flex; align-items:center; gap:5px; border-radius:20px; padding:4px 11px; font-size:11px; font-weight:700; letter-spacing:0.3px; text-transform:uppercase; }
+.diff-easy { background:var(--easy-bg); color:var(--easy); border:1px solid var(--easy-border); }
+.diff-med  { background:var(--med-bg);  color:var(--med);  border:1px solid var(--med-border); }
+.diff-hard { background:var(--hard-bg); color:var(--hard); border:1px solid var(--hard-border); }
+
+.email-group { display:flex; flex-direction:column; gap:6px; }
+.email-group label { font-size:12px; font-weight:600; letter-spacing:0.5px; text-transform:uppercase; color:var(--muted); }
+.email-group input { border:1px solid var(--border); border-radius:8px; padding:10px 14px; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); background:#fff; outline:none; transition:border-color 0.15s; width:100%; }
+.email-group input:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(46,126,201,0.12); }
+
+.bingo-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+.bingo-header h2 { font-size:15px; font-weight:600; }
+.progress-pill { font-size:12px; font-weight:600; color:var(--blue); background:#e8f2fb; border-radius:20px; padding:4px 12px; }
+
+.grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.cell { border:1.5px solid var(--border); border-radius:10px; padding:12px 8px 10px; text-align:center; cursor:pointer; transition:all 0.18s; background:#fafbfd; user-select:none; position:relative; min-height:108px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; }
+.cell.easy-cell { border-color:var(--easy-border); }
+.cell.med-cell  { border-color:var(--med-border); }
+.cell.hard-cell { border-color:var(--hard-border); }
+.cell:hover:not(.center):not(.checked):not(.win-line) { transform:translateY(-1px); box-shadow:0 4px 12px rgba(46,126,201,0.12); }
+.cell.easy-cell:hover:not(.checked):not(.win-line) { background:var(--easy-bg); border-color:var(--easy); }
+.cell.med-cell:hover:not(.checked):not(.win-line)  { background:var(--med-bg);  border-color:var(--med); }
+.cell.hard-cell:hover:not(.checked):not(.win-line) { background:var(--hard-bg); border-color:var(--hard); }
+.cell.checked { border-color:var(--blue); background:linear-gradient(135deg,#e8f4ff,#f0f9ff); }
+.cell.center  { background:var(--navy);   border-color:var(--navy); cursor:default; }
+.cell.center:hover { transform:none; box-shadow:none; }
+.cell.win-line { border-color:var(--orange)!important; background:linear-gradient(135deg,#fff4ec,#fff9f4)!important; box-shadow:0 0 0 2px rgba(255,107,26,0.2)!important; }
+.cell.win-line .cell-label { color:var(--orange)!important; }
+.cell-emoji { font-size:22px; line-height:1; }
+.cell-label { font-size:11px; font-weight:600; color:var(--text); line-height:1.3; }
+.cell-sub   { font-size:9.5px; color:var(--muted); line-height:1.4; }
+.center .cell-label { color:#fff; font-size:12px; }
+.center .cell-sub   { color:var(--gold); font-size:9.5px; }
+.diff-pip { position:absolute; bottom:6px; right:7px; font-size:9px; font-weight:700; letter-spacing:0.3px; text-transform:uppercase; opacity:0.75; }
+.easy-cell .diff-pip { color:var(--easy); }
+.med-cell  .diff-pip { color:var(--med); }
+.hard-cell .diff-pip { color:var(--hard); }
+.center    .diff-pip { color:rgba(255,255,255,0.5); }
+.check-dot { position:absolute; top:6px; right:6px; width:17px; height:17px; background:var(--blue); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff; font-weight:700; }
+.edit-dot  { position:absolute; top:6px; left:6px; width:17px; height:17px; background:var(--green); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff; cursor:pointer; transition:transform 0.15s; }
+.edit-dot:hover { transform:scale(1.2); }
+.auto-dot  { position:absolute; top:6px; right:6px; width:17px; height:17px; background:var(--muted); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff; }
+
+.win-banner { display:none; max-width:560px; margin:14px auto 0; padding:0 20px; }
+.win-inner  { background:var(--orange); border-radius:12px; padding:15px 20px; text-align:center; animation:pop 0.3s ease; }
+.win-inner p      { color:#fff; font-size:14px; font-weight:500; line-height:1.5; }
+.win-inner strong { display:block; font-size:18px; margin-bottom:4px; }
+@keyframes pop { from { transform:scale(0.95); opacity:0; } to { transform:scale(1); opacity:1; } }
+
+/* PRIZE TRACKER */
+.prize-tracker { max-width:560px; margin:16px auto 0; padding:0 20px; }
+.prize-card { background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+.prize-card-header { background:var(--navy); padding:12px 18px; display:flex; align-items:center; justify-content:space-between; }
+.prize-card-header p    { color:#fff; font-size:13px; font-weight:600; margin:0; }
+.prize-card-header span { color:var(--gold); font-size:12px; }
+.prize-tiers { padding:12px 16px; display:flex; flex-direction:column; gap:8px; }
+.prize-tier { display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius:10px; border:1.5px solid var(--border); background:#fafbfd; transition:all 0.2s; }
+.prize-tier.active   { border-color:var(--orange); background:#fff8f4; }
+.prize-tier.achieved { border-color:var(--green);  background:var(--easy-bg); }
+.prize-tier.locked   { opacity:0.4; }
+.tier-icon  { font-size:22px; flex-shrink:0; }
+.tier-info  { flex:1; }
+.tier-label { font-size:12px; font-weight:600; color:var(--text); line-height:1.4; }
+.tier-desc  { font-size:10.5px; color:var(--muted); margin-top:2px; }
+.tier-prize { text-align:right; flex-shrink:0; }
+.tier-prize strong { font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:1px; color:var(--navy); display:block; }
+.tier-prize span   { font-size:10px; color:var(--muted); }
+.prize-tier.active   .tier-prize strong { color:var(--orange); }
+.prize-tier.achieved .tier-prize strong { color:var(--green); }
+.tier-check { font-size:14px; margin-left:4px; display:none; }
+.prize-tier.achieved .tier-check { display:inline; }
+
+.prize-note { padding:12px 16px 14px; border-top:1px solid var(--border); }
+.prize-note p { font-size:11.5px; color:var(--muted); line-height:1.6; margin-bottom:6px; }
+.prize-note p:last-child { margin-bottom:0; }
+.prize-note strong { color:var(--text); }
+.prize-note .full-bingo-note { background:var(--hard-bg); border:1px solid var(--hard-border); border-radius:8px; padding:10px 12px; margin-top:8px; }
+.prize-note .full-bingo-note p { color:#7a1a22; margin:0; }
+.deadline-note { background:#f5f0ff; border:1px solid #d4b8f5; border-radius:8px; padding:10px 12px; margin-top:8px; }
+.deadline-note p { color:#4a2080; margin:0; }
+
+.submit-btn { width:100%; background:var(--navy); color:#fff; border:none; border-radius:10px; padding:16px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; transition:background 0.15s; }
+.submit-btn:hover    { background:#0d3a72; }
+.submit-btn:disabled { background:#aab4c8; cursor:not-allowed; }
+.error-msg { display:none; color:var(--red); font-size:13px; margin-top:10px; text-align:center; }
+
+#successScreen { display:none; max-width:560px; margin:40px auto; padding:0 20px; text-align:center; }
+.success-icon { font-size:56px; margin-bottom:16px; }
+.success-card h2 { font-family:'Bebas Neue',sans-serif; font-size:36px; color:var(--navy); letter-spacing:1px; margin-bottom:8px; }
+.success-card p  { font-size:15px; color:var(--muted); line-height:1.6; max-width:360px; margin:0 auto; }
+.success-prize { margin-top:16px; background:linear-gradient(135deg,#fff8ec,#fff4e0); border:1.5px solid var(--gold); border-radius:12px; padding:16px; }
+.success-prize p      { color:#7a4f00; font-size:13px; margin-bottom:4px; }
+.success-prize strong { font-family:'Bebas Neue',sans-serif; font-size:26px; color:var(--orange); letter-spacing:1px; display:block; }
+.success-prize .note  { font-size:11px; color:#7a4f00; margin-top:6px; font-style:italic; }
+.success-ref { margin-top:14px; background:var(--bg); border-radius:8px; padding:12px 16px; font-size:13px; color:var(--muted); }
+.success-ref strong { display:block; font-size:18px; letter-spacing:1px; margin-top:4px; color:var(--navy); }
+
+/* MODALS */
+.overlay { display:none; position:fixed; inset:0; background:rgba(10,46,92,0.5); z-index:200; align-items:center; justify-content:center; padding:20px; }
+.overlay.open { display:flex; }
+.modal { background:var(--card); border-radius:16px; padding:28px 24px 24px; width:100%; max-width:420px; box-shadow:0 20px 60px rgba(0,0,0,0.2); animation:slideUp 0.22s ease; position:relative; }
+@keyframes slideUp { from { transform:translateY(16px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+.modal-close { position:absolute; top:14px; right:16px; background:none; border:none; font-size:20px; cursor:pointer; color:var(--muted); padding:4px; line-height:1; }
+.modal-close:hover { color:var(--text); }
+.modal-diff  { display:inline-flex; align-items:center; gap:5px; border-radius:20px; padding:3px 10px; font-size:10px; font-weight:700; letter-spacing:0.3px; text-transform:uppercase; margin-bottom:10px; }
+.modal-emoji { font-size:30px; margin-bottom:6px; }
+.modal-title { font-size:16px; font-weight:600; margin-bottom:4px; }
+.modal-desc  { font-size:13px; color:var(--muted); line-height:1.5; margin-bottom:18px; }
+.modal-lbl   { font-size:11px; font-weight:600; letter-spacing:0.5px; text-transform:uppercase; color:var(--muted); margin-bottom:6px; display:block; }
+.modal-input { width:100%; border:1px solid var(--border); border-radius:8px; padding:10px 14px; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); background:#fff; outline:none; transition:border-color 0.15s; resize:vertical; }
+.modal-input:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(46,126,201,0.12); }
+.modal-hint { font-size:11px; color:var(--muted); margin-top:8px; font-style:italic; line-height:1.5; }
+.modal-err  { color:var(--red); font-size:12px; margin-top:6px; display:none; }
+.modal-actions { display:flex; gap:10px; margin-top:18px; }
+.btn-cancel  { flex:1; padding:10px; border-radius:8px; border:1px solid var(--border); background:#fff; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; cursor:pointer; color:var(--muted); }
+.btn-cancel:hover { background:var(--bg); }
+.btn-confirm { flex:2; padding:10px; border-radius:8px; border:none; background:var(--navy); color:#fff; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600; cursor:pointer; }
+.btn-confirm:hover { background:#0d3a72; }
+.btn-uncheck { width:100%; margin-top:8px; padding:8px; border-radius:8px; border:1px solid #ffd0d0; background:#fff5f5; color:var(--red); font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; cursor:pointer; }
+.btn-uncheck:hover { background:#ffe8e8; }
+.auto-info { background:var(--bg); border-radius:10px; padding:14px 16px; font-size:13px; color:var(--muted); line-height:1.6; }
+.auto-info strong { color:var(--text); display:block; margin-bottom:4px; font-size:14px; }
+
+@media(max-width:480px) {
+  .cell { min-height:90px; padding:10px 6px; }
+  .cell-emoji { font-size:18px; }
+  .cell-label { font-size:10px; }
+  .cell-sub   { font-size:9px; }
+}
+</style>
+</head>
+<body>
+
+<div class="stripe">
+  <span style="background:#FF6B1A"></span><span style="background:#E63946"></span>
+  <span style="background:#2E7EC9"></span><span style="background:#17C3B2"></span>
+  <span style="background:#2EA744"></span><span style="background:#6B3FA0"></span>
+</div>
+
+<div class="page-header">
+  <p class="eyebrow">5th Anniversary Edition</p>
+  <h1>KMS Sports <span>Bingo</span></h1>
+  <p>Complete 3 in a row, submit your card, and win a prize!</p>
+</div>
+
+<div class="stripe">
+  <span style="background:#6B3FA0"></span><span style="background:#2EA744"></span>
+  <span style="background:#17C3B2"></span><span style="background:#2E7EC9"></span>
+  <span style="background:#E63946"></span><span style="background:#FF6B1A"></span>
+</div>
+
+<div id="mainContent">
+
+  <div class="section">
+    <div class="card">
+      <ol class="step-list">
+        <li><span class="step-num">1</span>Enter your KMS email below.</li>
+        <li><span class="step-num">2</span>Click any challenge to mark it — some will ask for quick evidence.</li>
+        <li><span class="step-num">3</span>Get <strong>3 in a row</strong> (any direction) then hit Submit!</li>
+        <li><span class="step-num">4</span>The more lines you complete, the bigger the prize! 🏅</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="section" style="margin-top:16px;">
+    <div class="card">
+      <div class="email-group">
+        <label for="kmsEmail">KMS Email</label>
+        <input type="email" id="kmsEmail" placeholder="you@kms-technology.com" autocomplete="email" />
+      </div>
+    </div>
+  </div>
+
+  <div class="section" style="margin-top:16px;">
+    <div class="card">
+      <div class="bingo-header">
+        <h2>Your Bingo Card</h2>
+        <span class="progress-pill" id="progressPill">0 / 8 done</span>
+      </div>
+
+      <div class="legend-row">
+        <span class="diff-badge diff-easy">🟢 Easy</span>
+        <span class="diff-badge diff-med">🔵 Medium</span>
+        <span class="diff-badge diff-hard">🔴 Hard</span>
+      </div>
+
+      <div class="grid" id="bingoGrid">
+
+        <!-- 0: Easy — React & Tag (no evidence, organizer checks) -->
+        <div class="cell easy-cell" data-idx="0" onclick="openAutoModal(0)">
+          <div class="cell-emoji">❤️👥</div>
+          <div class="cell-label">React & Tag the Post</div>
+          <div class="cell-sub">Like SF post + tag 2 KMSers in comments</div>
+          <div class="diff-pip">Easy</div>
+        </div>
+
+        <!-- 1: Easy — Share the Post (no evidence) -->
+        <div class="cell easy-cell" data-idx="1" onclick="openAutoModal(1)">
+          <div class="cell-emoji">📤</div>
+          <div class="cell-label">Share the Post</div>
+          <div class="cell-sub">Share the official Sports Fest post</div>
+          <div class="diff-pip">Easy</div>
+        </div>
+
+        <!-- 2: Med — Post a Throwback (needs link) -->
+        <div class="cell med-cell" data-idx="2" onclick="openModal(2)">
+          <div class="cell-emoji">📸</div>
+          <div class="cell-label">Post a Throwback</div>
+          <div class="cell-sub">Share SF moment on FB/IG story (10+ views)</div>
+          <div class="diff-pip">Med</div>
+        </div>
+
+        <!-- 3: Easy — Recruit a Rookie (needs name) -->
+        <div class="cell easy-cell" data-idx="3" onclick="openModal(3)">
+          <div class="cell-emoji">🌟</div>
+          <div class="cell-label">Recruit a Rookie</div>
+          <div class="cell-sub">Bring a first-timer to register!</div>
+          <div class="diff-pip">Easy</div>
+        </div>
+
+        <!-- 4: CENTER — Registered (Easy, not Free) -->
+        <div class="cell center" data-idx="4" onclick="openAutoModal(4)">
+          <div class="cell-emoji">✅</div>
+          <div class="cell-label">Registered!</div>
+          <div class="cell-sub">Already signed up for 1 sport</div>
+          <div class="diff-pip">Easy</div>
+        </div>
+
+        <!-- 5: Med — Predict the Champ (needs text, post-event verified) -->
+        <div class="cell med-cell" data-idx="5" onclick="openModal(5)">
+          <div class="cell-emoji">🔮</div>
+          <div class="cell-label">Predict the Champ</div>
+          <div class="cell-sub">Verified after all tournaments end 🏆</div>
+          <div class="diff-pip">Med</div>
+        </div>
+
+        <!-- 6: Hard — 3-Year Streak (no evidence) -->
+        <div class="cell hard-cell" data-idx="6" onclick="openAutoModal(6)">
+          <div class="cell-emoji">🔁</div>
+          <div class="cell-label">3-Year Streak!</div>
+          <div class="cell-sub">Joined SF 3 years in a row</div>
+          <div class="diff-pip">Hard</div>
+        </div>
+
+        <!-- 7: Easy — Sports Lover (no evidence) -->
+        <div class="cell easy-cell" data-idx="7" onclick="openAutoModal(7)">
+          <div class="cell-emoji">🏅</div>
+          <div class="cell-label">Sports Lover!</div>
+          <div class="cell-sub">Register & join 2+ tournaments in SF2026</div>
+          <div class="diff-pip">Easy</div>
+        </div>
+
+        <!-- 8: Med — Guess the Total (needs number, post-event verified) -->
+        <div class="cell med-cell" data-idx="8" onclick="openModal(8)">
+          <div class="cell-emoji">🔢</div>
+          <div class="cell-label">Guess the Total!</div>
+          <div class="cell-sub">How many KMSers play this Bingo? (Closest wins) Verified after game closes 🎯</div>
+          <div class="diff-pip">Med</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- WIN BANNER -->
+  <div class="win-banner" id="winBanner">
+    <div class="win-inner">
+      <strong>🎉 BINGO! <span id="winLineCount">1</span> line<span id="winLinePlural"></span>!</strong>
+      <p>You're in the running — scroll down to see your prize and submit!</p>
+    </div>
+  </div>
+
+  <!-- PRIZE TRACKER -->
+  <div class="prize-tracker">
+    <div class="prize-card">
+      <div class="prize-card-header">
+        <p>🏆 Prize Tracker</p>
+        <span id="liveLines">0 lines completed</span>
+      </div>
+
+      <div class="prize-tiers">
+
+        <div class="prize-tier locked" id="tier1">
+          <div class="tier-icon">🥉</div>
+          <div class="tier-info">
+            <div class="tier-label">✅ 1 Bingo Line <span class="tier-check">✅</span></div>
+            <div class="tier-desc">12 winners · First come, first served</div>
+          </div>
+          <div class="tier-prize">
+            <strong>50K</strong>
+            <span>VND voucher</span>
+          </div>
+        </div>
+
+        <div class="prize-tier locked" id="tier2">
+          <div class="tier-icon">🥈</div>
+          <div class="tier-info">
+            <div class="tier-label">✅✅ 2 Bingo Lines <span class="tier-check">✅</span></div>
+            <div class="tier-desc">8 winners · First come, first served</div>
+          </div>
+          <div class="tier-prize">
+            <strong>100K</strong>
+            <span>VND voucher</span>
+          </div>
+        </div>
+
+        <div class="prize-tier locked" id="tier3">
+          <div class="tier-icon">🥇</div>
+          <div class="tier-info">
+            <div class="tier-label">✅✅✅ 3 Bingo Lines <span class="tier-check">✅</span></div>
+            <div class="tier-desc">5 winners · First come, first served</div>
+          </div>
+          <div class="tier-prize">
+            <strong>200K</strong>
+            <span>VND voucher</span>
+          </div>
+        </div>
+
+        <div class="prize-tier locked" id="tierFull">
+          <div class="tier-icon">🏆</div>
+          <div class="tier-info">
+            <div class="tier-label">🏆 Full Bingo — All 9 Squares <span class="tier-check">✅</span></div>
+            <div class="tier-desc">2 winners · Announced after SF ends</div>
+          </div>
+          <div class="tier-prize">
+            <strong>300K</strong>
+            <span>VND voucher</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="prize-note">
+        <div class="deadline-note">
+          <p>⏰ <strong>Minigame closes on 20/5</strong> or earlier once all prizes are verified and claimed — first come, first served!</p>
+        </div>
+        <div class="full-bingo-note" style="margin-top:8px;">
+          <p>🔮 <strong>Full Bingo (300K)</strong> results will be announced <strong>after Sports Fest ends</strong>, as the Predict the Champ and Guess the Total squares can only be verified once all tournaments are complete.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUBMIT -->
+  <div class="section" style="margin-top:20px;">
+    <button class="submit-btn" id="submitBtn" onclick="submitCard()">Submit My Bingo Card</button>
+    <p class="error-msg" id="errorMsg"></p>
+  </div>
+
+</div><!-- /mainContent -->
+
+<!-- SUCCESS -->
+<div id="successScreen">
+  <div class="section">
+    <div class="card success-card">
+      <div class="success-icon">🏅</div>
+      <h2>Card Submitted!</h2>
+      <p>Your bingo card has been recorded. Winners announced after verification closes.</p>
+      <div class="success-prize">
+        <p>Your current prize tier</p>
+        <strong id="successPrize">—</strong>
+        <p class="note" id="successPrizeNote"></p>
+      </div>
+      <div class="success-ref">
+        Submission reference
+        <strong id="refCode">—</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="stripe" style="margin-top:48px;">
+  <span style="background:#6B3FA0"></span><span style="background:#2EA744"></span>
+  <span style="background:#17C3B2"></span><span style="background:#2E7EC9"></span>
+  <span style="background:#E63946"></span><span style="background:#FF6B1A"></span>
+</div>
+<footer style="padding:16px 0;text-align:center;font-size:12px;color:var(--muted);">
+  KMS Sports Festival 5 &mdash; Internal Use Only &mdash; &copy; KMS Technology
+</footer>
+
+<!-- EVIDENCE MODAL -->
+<div class="overlay" id="overlay" onclick="overlayClick(event)">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <button class="modal-close" onclick="closeModal()" aria-label="Close">&#x2715;</button>
+    <div class="modal-diff"  id="mDiff"></div>
+    <div class="modal-emoji" id="mEmoji"></div>
+    <div class="modal-title" id="mTitle"></div>
+    <div class="modal-desc"  id="mDesc"></div>
+    <label class="modal-lbl" id="mLbl" for="mInput"></label>
+    <textarea class="modal-input" id="mInput" rows="2"></textarea>
+    <p class="modal-hint" id="mHint"></p>
+    <p class="modal-err"  id="mErr">Please fill in the field before confirming.</p>
+    <div class="modal-actions">
+      <button class="btn-cancel"  onclick="closeModal()">Cancel</button>
+      <button class="btn-confirm" onclick="confirmCheck()">Confirm ✓</button>
+    </div>
+    <button class="btn-uncheck" id="btnUncheck" onclick="uncheckCell()" style="display:none;">Remove this action</button>
+  </div>
+</div>
+
+<!-- AUTO-CHECK MODAL -->
+<div class="overlay" id="autoOverlay" onclick="autoOverlayClick(event)">
+  <div class="modal" role="dialog" aria-modal="true">
+    <button class="modal-close" onclick="closeAutoModal()" aria-label="Close">&#x2715;</button>
+    <div class="modal-diff"  id="aDiff"></div>
+    <div class="modal-emoji" id="aEmoji"></div>
+    <div class="modal-title" id="aTitle"></div>
+    <div class="auto-info"   id="aInfo"></div>
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn-cancel"  onclick="closeAutoModal()">Close</button>
+      <button class="btn-confirm" id="aConfirmBtn" onclick="confirmAutoCheck()">Mark as Done ✓</button>
+    </div>
+    <button class="btn-uncheck" id="aUncheckBtn" onclick="uncheckAutoCell()" style="display:none;">Remove this action</button>
+  </div>
+</div>
+
+<script>
+const CELLS = [
+  { idx:0, diff:'easy', emoji:'❤️👥', label:'React & Tag the Post',
+    desc:'Like the official SF post on Facebook AND tag at least 2 KMSers you want to compete with in the comment section.',
+    needsEvidence:false,
+    autoNote:'No evidence needed — the organizer will check your reaction and tags directly on the kick-off post.',
+    formField:'entry.1328904711' },
+
+  { idx:1, diff:'easy', emoji:'📤', label:'Share the Post',
+    desc:'Share the official KMS Sports Fest 2026 post on your Facebook timeline.',
+    needsEvidence:false,
+    autoNote:'No evidence needed — the organizer will verify the share directly on Facebook.',
+    formField:'entry.1514642654' },
+
+  { idx:2, diff:'med', emoji:'📸', label:'Post a Throwback',
+    desc:'Share your favourite Sports Fest moment on your Facebook or Instagram story — must reach at least 10 views!',
+    needsEvidence:true,
+    lbl:'Paste the link to your captured story image',
+    placeholder:'https://www.facebook.com/… or https://drive.google.com/…',
+    rows:1,
+    hint:'Screenshot your story showing the view count, upload to Google Drive or Facebook, then paste the shareable link here.',
+    formField:'entry.94439122' },
+
+  { idx:3, diff:'easy', emoji:'🌟', label:'Recruit a Rookie',
+    desc:"Get 1 KMSer who has NEVER joined Sports Fest before to register this year!",
+    needsEvidence:true,
+    lbl:"Enter your rookie friend's full name",
+    placeholder:'e.g. Nguyen Van A',
+    rows:1,
+    hint:'They must complete their registration. The organizer will cross-check the registration list.',
+    formField:'entry.2006158293' },
+
+  { idx:4, diff:'easy', emoji:'✅', label:'Registered!',
+    desc:"You've already signed up for at least 1 sport. This is your center space!",
+    needsEvidence:false,
+    autoNote:'No evidence needed — the organizer will verify your registration in the sign-up list.',
+    formField:'' },
+
+  { idx:5, diff:'med', emoji:'🔮', label:'Predict the Champ',
+    desc:'Who will take 1st place in any sport tournament this year? Submit your prediction now — results verified after all tournaments end!',
+    needsEvidence:true,
+    lbl:'Format: [Sport - Team/Name]',
+    placeholder:'e.g. Badminton - Nguyen Van A  |  Football - Team Rocket',
+    rows:3,
+    hint:'You can add multiple predictions, one per line. Verified after Sports Fest ends — correct predictions count toward Full Bingo!',
+    formField:'entry.976734086' },
+
+  { idx:6, diff:'hard', emoji:'🔁', label:'3-Year Streak!',
+    desc:"You've joined KMS Sports Fest 3 years in a row — a true SF veteran!",
+    needsEvidence:false,
+    autoNote:'No evidence needed — the organizer will verify your participation history across previous Sports Fests.',
+    formField:'entry.1472214793' },
+
+  { idx:7, diff:'easy', emoji:'🏅', label:'Sports Lover!',
+    desc:'Register and actively join at least 2 different tournaments at KMS Sports Fest 2026.',
+    needsEvidence:false,
+    autoNote:'No evidence needed — the organizer will verify your multi-tournament registration in the sign-up list.',
+    formField:'entry.329952950' },
+
+  { idx:8, diff:'med', emoji:'🔢', label:'Guess the Total!',
+    desc:'How many KMSers will play this Bingo game? The closest guess wins! Results verified after the game closes.',
+    needsEvidence:true,
+    lbl:'Enter your guess (number of Bingo players)',
+    placeholder:'e.g. 87',
+    rows:1,
+    hint:'Whole numbers only. Closest guess wins — ties broken by earliest submission time. Verified after the Bingo game closes.',
+    formField:'entry.509537523' }
+];
+
+const DIFF_STYLE = {
+  easy:{ cls:'diff-easy', label:'🟢 Easy' },
+  med: { cls:'diff-med',  label:'🔵 Medium' },
+  hard:{ cls:'diff-hard', label:'🔴 Hard' },
+  free:{ cls:'diff-easy', label:'🟢 Easy' }
+};
+
+const WINS = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+const checked  = Array(9).fill(false);
+const evidence = Array(9).fill('');
+checked[4] = true;
+
+let activeIdx = null, autoActiveIdx = null;
+
+/* ── PRIZE CALC ── */
+function calcState() {
+  const lines  = WINS.filter(combo => combo.every(i => checked[i])).length;
+  const allBoxes = checked.every(v => v);
+  let winSet = new Set();
+  WINS.forEach(combo => { if (combo.every(i => checked[i])) combo.forEach(i => winSet.add(i)); });
+  return { lines, allBoxes, winSet };
+}
+
+function getPrizeTier(lines, allBoxes) {
+  if (allBoxes)   return { label:'Full Bingo — 300K VND Voucher 🏆', note:'Verified after Sports Fest ends — Predict & Guess results must be confirmed.' };
+  if (lines >= 3) return { label:'3 Lines — 200K VND Voucher 🥇', note:'' };
+  if (lines >= 2) return { label:'2 Lines — 100K VND Voucher 🥈', note:'' };
+  if (lines >= 1) return { label:'1 Line — 50K VND Voucher 🥉',   note:'' };
+  return { label:'', note:'' };
+}
+
+/* ── RENDER ── */
+function render() {
+  const { lines, allBoxes, winSet } = calcState();
+
+  document.querySelectorAll('.cell').forEach((el, i) => {
+    if (i === 4) return;
+    el.querySelectorAll('.check-dot,.edit-dot,.auto-dot').forEach(n => n.remove());
+    el.classList.remove('checked','win-line');
+
+    if (checked[i]) {
+      el.classList.add(winSet.has(i) ? 'win-line' : 'checked');
+      const c = CELLS[i];
+      if (c.needsEvidence) {
+        const ed = document.createElement('div');
+        ed.className = 'edit-dot'; ed.textContent = '✎'; ed.title = 'Edit evidence';
+        ed.onclick = e => { e.stopPropagation(); openModal(i); };
+        el.appendChild(ed);
+      } else {
+        const ad = document.createElement('div');
+        ad.className = 'auto-dot'; ad.textContent = '✓';
+        el.appendChild(ad);
+      }
+      const cd = document.createElement('div');
+      cd.className = 'check-dot'; cd.textContent = '✓';
+      el.appendChild(cd);
+    }
+  });
+
+  const done = checked.filter((v,i) => i !== 4 && v).length;
+  document.getElementById('progressPill').textContent = done + ' / 8 done';
+
+  // win banner
+  document.getElementById('winBanner').style.display = lines > 0 ? 'block' : 'none';
+  if (lines > 0) {
+    document.getElementById('winLineCount').textContent  = allBoxes ? 'Full Bingo' : lines;
+    document.getElementById('winLinePlural').textContent = (!allBoxes && lines === 1) ? '' : 's';
+  }
+
+  // live line count
+  document.getElementById('liveLines').textContent = lines + ' line' + (lines !== 1 ? 's' : '') + ' completed';
+
+  // prize tiers
+  const setTier = (id, state) => {
+    const el = document.getElementById(id);
+    el.classList.remove('locked','active','achieved');
+    el.classList.add(state);
+  };
+
+  if (allBoxes) {
+    setTier('tier1','achieved'); setTier('tier2','achieved');
+    setTier('tier3','achieved'); setTier('tierFull','active');
+  } else if (lines >= 3) {
+    setTier('tier1','achieved'); setTier('tier2','achieved');
+    setTier('tier3','active');   setTier('tierFull','locked');
+  } else if (lines >= 2) {
+    setTier('tier1','achieved'); setTier('tier2','active');
+    setTier('tier3','locked');   setTier('tierFull','locked');
+  } else if (lines >= 1) {
+    setTier('tier1','active');   setTier('tier2','locked');
+    setTier('tier3','locked');   setTier('tierFull','locked');
+  } else {
+    setTier('tier1','locked'); setTier('tier2','locked');
+    setTier('tier3','locked'); setTier('tierFull','locked');
+  }
+}
+
+/* ── EVIDENCE MODAL ── */
+function openModal(idx) {
+  const c = CELLS[idx];
+  if (!c.needsEvidence) { openAutoModal(idx); return; }
+  activeIdx = idx;
+  const ds = DIFF_STYLE[c.diff];
+  const de = document.getElementById('mDiff');
+  de.textContent = ds.label; de.className = 'modal-diff ' + ds.cls;
+  document.getElementById('mEmoji').textContent = c.emoji;
+  document.getElementById('mTitle').textContent = c.label;
+  document.getElementById('mDesc').textContent  = c.desc;
+  document.getElementById('mLbl').textContent   = c.lbl;
+  document.getElementById('mHint').textContent  = c.hint || '';
+  document.getElementById('mErr').style.display = 'none';
+  document.getElementById('btnUncheck').style.display = checked[idx] ? 'block' : 'none';
+  const inp = document.getElementById('mInput');
+  inp.value = evidence[idx] || ''; inp.placeholder = c.placeholder; inp.rows = c.rows || 2;
+  document.getElementById('overlay').classList.add('open');
+  setTimeout(() => inp.focus(), 80);
+}
+
+function closeModal() { document.getElementById('overlay').classList.remove('open'); activeIdx = null; }
+function overlayClick(e) { if (e.target === document.getElementById('overlay')) closeModal(); }
+
+function confirmCheck() {
+  const val = document.getElementById('mInput').value.trim();
+  if (!val) { document.getElementById('mErr').style.display = 'block'; return; }
+  evidence[activeIdx] = val; checked[activeIdx] = true;
+  closeModal(); render();
+}
+
+function uncheckCell() {
+  checked[activeIdx] = false; evidence[activeIdx] = '';
+  closeModal(); render();
+}
+
+/* ── AUTO-CHECK MODAL ── */
+function openAutoModal(idx) {
+  autoActiveIdx = idx;
+  const c = CELLS[idx]; const ds = DIFF_STYLE[c.diff];
+  const de = document.getElementById('aDiff');
+  de.textContent = ds.label; de.className = 'modal-diff ' + ds.cls;
+  document.getElementById('aEmoji').textContent = c.emoji;
+  document.getElementById('aTitle').textContent = c.label;
+  document.getElementById('aInfo').innerHTML = '<strong>' + c.label + '</strong>' + c.autoNote;
+  const isCenter = idx === 4, alrChecked = checked[idx];
+  document.getElementById('aConfirmBtn').style.display = (isCenter || alrChecked) ? 'none' : 'block';
+  document.getElementById('aUncheckBtn').style.display = (!isCenter && alrChecked) ? 'block' : 'none';
+  document.getElementById('autoOverlay').classList.add('open');
+}
+
+function closeAutoModal() { document.getElementById('autoOverlay').classList.remove('open'); autoActiveIdx = null; }
+function autoOverlayClick(e) { if (e.target === document.getElementById('autoOverlay')) closeAutoModal(); }
+function confirmAutoCheck() { checked[autoActiveIdx] = true; closeAutoModal(); render(); }
+function uncheckAutoCell()  { checked[autoActiveIdx] = false; closeAutoModal(); render(); }
+
+/* ── SUBMIT ── */
+function submitCard() {
+  const email = document.getElementById('kmsEmail').value.trim();
+  const errEl = document.getElementById('errorMsg');
+  errEl.style.display = 'none';
+
+  if (!email) { errEl.textContent = 'Please enter your KMS email address.'; errEl.style.display='block'; return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { errEl.textContent = 'Please enter a valid email address.'; errEl.style.display='block'; return; }
+
+  const { lines, allBoxes } = calcState();
+  if (lines === 0) { errEl.textContent = 'You need at least 3 in a row to submit! Keep completing challenges.'; errEl.style.display='block'; return; }
+
+  const prizeInfo = getPrizeTier(lines, allBoxes);
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = 'Submitting…';
+
+  // ── Hidden iframe trick — works inside Google Sites sandbox ──
+  // Creates a hidden form and submits directly to Google Forms
+  // without fetch(), bypassing all CORS and sandbox restrictions.
+  const FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLScBDtzV_Cno8nUE9DK0ovAMo4cTAmsJ9XH7PnLP7FOgFs_gNA/formResponse';
+
+  // Build evidence summary for the prize tier field
+  const evidenceSummary = [
+    checked[0] ? '[React & Tag]: YES' : '',
+    checked[1] ? '[Share Post]: YES' : '',
+    evidence[2] ? '[Throwback]: ' + evidence[2] : '',
+    evidence[3] ? '[Rookie]: ' + evidence[3] : '',
+    evidence[5] ? '[Predict]: ' + evidence[5] : '',
+    checked[6] ? '[3yr Streak]: YES' : '',
+    checked[7] ? '[Sports Lover]: YES' : '',
+    evidence[8] ? '[Guess]: ' + evidence[8] : ''
+  ].filter(Boolean).join(' | ');
+
+  // Create hidden iframe to catch the Google Forms redirect
+  const iframe = document.createElement('iframe');
+  iframe.name = 'hidden_iframe';
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
+
+  // Create hidden form targeting the iframe
+  const form = document.createElement('form');
+  form.method  = 'POST';
+  form.action  = FORM_ACTION;
+  form.target  = 'hidden_iframe';
+  form.style.display = 'none';
+
+  // Map of entry ID → value
+  const fields = {
+    'entry.2025386368': email,
+    'entry.1328904711': checked[0] ? 'YES' : '',
+    'entry.1514642654': checked[1] ? 'YES' : '',
+    'entry.94439122':   evidence[2] || '',
+    'entry.2006158293': evidence[3] || '',
+    'entry.976734086':  evidence[5] || '',
+    'entry.1472214793': checked[6] ? 'YES' : '',
+    'entry.329952950':  checked[7] ? 'YES' : '',
+    'entry.509537523':  evidence[8] || '',
+    'entry.995882873':  String(lines),
+    'entry.1357287872': allBoxes ? 'YES' : '',
+    'entry.1949323304': prizeInfo.label
+  };
+
+  // Append all fields to form
+  Object.entries(fields).forEach(([name, value]) => {
+    const input = document.createElement('input');
+    input.type  = 'hidden';
+    input.name  = name;
+    input.value = value;
+    form.appendChild(input);
+  });
+
+  document.body.appendChild(form);
+
+  // Submit and show success after short delay
+  iframe.onload = function() {
+    showSuccess(prizeInfo);
+    // Clean up
+    setTimeout(() => {
+      document.body.removeChild(form);
+      document.body.removeChild(iframe);
+    }, 1000);
+  };
+
+  form.submit();
+}
+
+function showSuccess(prizeInfo) {
+  document.getElementById('mainContent').style.display   = 'none';
+  document.getElementById('successScreen').style.display = 'block';
+  document.getElementById('successPrize').textContent     = prizeInfo.label || 'Submitted!';
+  document.getElementById('successPrizeNote').textContent = prizeInfo.note  || '';
+  document.getElementById('refCode').textContent =
+    'KMS5-' + Date.now().toString(36).toUpperCase().slice(-6);
+}
+
+render();
+</script>
+</body>
+</html>
