@@ -678,92 +678,94 @@ function submitCard() {
   const errEl = document.getElementById('errorMsg');
   errEl.style.display = 'none';
 
-  if (!email) { errEl.textContent = 'Please enter your KMS email address.'; errEl.style.display='block'; return; }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { errEl.textContent = 'Please enter a valid email address.'; errEl.style.display='block'; return; }
+  if (!email) {
+    errEl.textContent = 'Please enter your KMS email address.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errEl.textContent = 'Please enter a valid email address.';
+    errEl.style.display = 'block';
+    return;
+  }
 
   const { lines, allBoxes } = calcState();
-  if (lines === 0) { errEl.textContent = 'You need at least 3 in a row to submit! Keep completing challenges.'; errEl.style.display='block'; return; }
+
+  if (lines === 0) {
+    errEl.textContent = 'You need at least 3 in a row to submit!';
+    errEl.style.display = 'block';
+    return;
+  }
 
   const prizeInfo = getPrizeTier(lines, allBoxes);
 
   const btn = document.getElementById('submitBtn');
-  btn.disabled = true; btn.textContent = 'Submitting…';
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
 
-  // ── Hidden iframe trick — works inside Google Sites sandbox ──
-  // Creates a hidden form and submits directly to Google Forms
-  // without fetch(), bypassing all CORS and sandbox restrictions.
-  const FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLScBDtzV_Cno8nUE9DK0ovAMo4cTAmsJ9XH7PnLP7FOgFs_gNA/formResponse';
+  // GOOGLE FORM ACTION
+  const FORM_ACTION =
+    'https://docs.google.com/forms/d/e/1FAIpQLScBDtzV_Cno8nUE9DK0ovAMo4cTAmsJ9XH7PnLP7FOgFs_gNA/formResponse';
 
-  // Build evidence summary for the prize tier field
-  const evidenceSummary = [
-    checked[0] ? '[React & Tag]: YES' : '',
-    checked[1] ? '[Share Post]: YES' : '',
-    evidence[2] ? '[Throwback]: ' + evidence[2] : '',
-    evidence[3] ? '[Rookie]: ' + evidence[3] : '',
-    evidence[5] ? '[Predict]: ' + evidence[5] : '',
-    checked[6] ? '[3yr Streak]: YES' : '',
-    checked[7] ? '[Sports Lover]: YES' : '',
-    evidence[8] ? '[Guess]: ' + evidence[8] : ''
-  ].filter(Boolean).join(' | ');
-
-  // Create hidden iframe to catch the Google Forms redirect
-  const iframe = document.createElement('iframe');
-  iframe.name = 'hidden_iframe';
-  iframe.style.display = 'none';
-  document.body.appendChild(iframe);
-
-  // Create hidden form targeting the iframe
+  // Create hidden form
   const form = document.createElement('form');
-  form.method  = 'POST';
-  form.action  = FORM_ACTION;
-  form.target  = 'hidden_iframe';
+  form.method = 'POST';
+  form.action = FORM_ACTION;
+  form.target = '_blank';
   form.style.display = 'none';
 
-  // Map of entry ID → value
+  // FORM DATA
   const fields = {
     'entry.2025386368': email,
     'entry.1328904711': checked[0] ? 'YES' : '',
     'entry.1514642654': checked[1] ? 'YES' : '',
-    'entry.94439122':   evidence[2] || '',
+    'entry.94439122': evidence[2] || '',
     'entry.2006158293': evidence[3] || '',
-    'entry.976734086':  evidence[5] || '',
+    'entry.976734086': evidence[5] || '',
     'entry.1472214793': checked[6] ? 'YES' : '',
-    'entry.329952950':  checked[7] ? 'YES' : '',
-    'entry.509537523':  evidence[8] || '',
-    'entry.995882873':  String(lines),
+    'entry.329952950': checked[7] ? 'YES' : '',
+    'entry.509537523': evidence[8] || '',
+    'entry.995882873': String(lines),
     'entry.1357287872': allBoxes ? 'YES' : '',
     'entry.1949323304': prizeInfo.label
   };
 
-  // Append all fields to form
+  // Append hidden inputs
   Object.entries(fields).forEach(([name, value]) => {
     const input = document.createElement('input');
-    input.type  = 'hidden';
-    input.name  = name;
+    input.type = 'hidden';
+    input.name = name;
     input.value = value;
     form.appendChild(input);
   });
 
   document.body.appendChild(form);
 
-  // Submit and show success after short delay
-  iframe.onload = function() {
-    showSuccess(prizeInfo);
-    // Clean up
-    setTimeout(() => {
-      document.body.removeChild(form);
-      document.body.removeChild(iframe);
-    }, 1000);
-  };
-
+  // Submit form
   form.submit();
+
+  // Cleanup
+  setTimeout(() => {
+    document.body.removeChild(form);
+  }, 1000);
+
+  // Show success screen
+  setTimeout(() => {
+    showSuccess(prizeInfo);
+  }, 1200);
 }
 
 function showSuccess(prizeInfo) {
-  document.getElementById('mainContent').style.display   = 'none';
+  document.getElementById('mainContent').style.display = 'none';
   document.getElementById('successScreen').style.display = 'block';
-  document.getElementById('successPrize').textContent     = prizeInfo.label || 'Submitted!';
-  document.getElementById('successPrizeNote').textContent = prizeInfo.note  || '';
+
+  document.getElementById('successPrize').textContent =
+    prizeInfo.label || 'Submitted!';
+
+  document.getElementById('successPrizeNote').textContent =
+    prizeInfo.note || '';
+
   document.getElementById('refCode').textContent =
     'KMS5-' + Date.now().toString(36).toUpperCase().slice(-6);
 }
