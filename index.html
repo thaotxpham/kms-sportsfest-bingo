@@ -21,7 +21,6 @@ body { font-family:'Lexend',sans-serif; background:var(--bg); color:var(--text);
 
 .page-header { background:var(--navy); padding:36px 24px 32px; text-align:center; position:relative; overflow:hidden; }
 .page-header::before { content:''; position:absolute; top:-60px; right:-80px; width:260px; height:260px; border-radius:50%; background:rgba(255,255,255,0.04); }
-.eyebrow { font-size:11px; font-weight:600; letter-spacing:5px; text-transform:uppercase; color:var(--gold); margin-bottom:10px; }
 .page-header h1 { font-family:'Bebas Neue',sans-serif; font-size:clamp(42px,8vw,68px); letter-spacing:2px; color:#fff; line-height:1; margin-bottom:6px; }
 .page-header h1 span { color:var(--orange); }
 .page-header p { font-size:15px; color:rgba(255,255,255,0.65); max-width:420px; margin:0 auto; line-height:1.6; }
@@ -125,8 +124,6 @@ body { font-family:'Lexend',sans-serif; background:var(--bg); color:var(--text);
 .success-prize p      { color:#7a4f00; font-size:13px; margin-bottom:4px; }
 .success-prize strong { font-family:'Bebas Neue',sans-serif; font-size:26px; color:var(--orange); letter-spacing:1px; display:block; }
 .success-prize .note  { font-size:11px; color:#7a4f00; margin-top:6px; font-style:italic; }
-.success-ref { margin-top:14px; background:var(--bg); border-radius:8px; padding:12px 16px; font-size:13px; color:var(--muted); }
-.success-ref strong { display:block; font-size:18px; letter-spacing:1px; margin-top:4px; color:var(--navy); }
 
 .overlay { display:none; position:fixed; inset:0; background:rgba(10,46,92,0.5); z-index:200; align-items:center; justify-content:center; padding:20px; }
 .overlay.open { display:flex; }
@@ -185,10 +182,10 @@ body { font-family:'Lexend',sans-serif; background:var(--bg); color:var(--text);
   <div class="section">
     <div class="card">
       <ol class="step-list">
-        <li><span class="step-num">1</span>Enter your KMS email below.</li>
-        <li><span class="step-num">2</span>Click any challenge to finish and Mark done.</li>
-        <li><span class="step-num">3</span>Complete <strong>3 boxes in a row</strong> (any direction) then hit Submit!</li>
-        <li><span class="step-num">4</span>The more lines you complete, the bigger the prize! 🏅</li>
+        <li><span class="step-num">1</span>Click any challenge to finish and Mark done.</li>
+        <li><span class="step-num">2</span>Complete <strong>3 boxes in a row</strong> (any direction).</li>
+        <li><span class="step-num">3</span>The more lines you complete, the bigger the prize! 🏅</li>
+        <li><span class="step-num">⚠️</span> Only <strong>your first submission counts</strong>, so choose carefully before hitting SUBMIT!</li>
       </ol>
     </div>
   </div>
@@ -323,7 +320,7 @@ body { font-family:'Lexend',sans-serif; background:var(--bg); color:var(--text);
         <div class="prize-tier locked" id="tierFull">
           <div class="tier-icon">🏆</div>
           <div class="tier-info">
-            <div class="tier-label">🏆 Full Bingo — All 9 Squares <span class="tier-check">✅</span></div>
+            <div class="tier-label"> Full Bingo — All 9 Squares <span class="tier-check">✅</span></div>
             <div class="tier-desc">2 winners · Announced after SF ends</div>
           </div>
           <div class="tier-prize"><strong>300K</strong><span>VND voucher</span></div>
@@ -334,7 +331,7 @@ body { font-family:'Lexend',sans-serif; background:var(--bg); color:var(--text);
           <p>⏰ <strong>Deadline to submit your Bingo card: 20 May 2026</strong> — prizes will be awarded to <strong>the first 30 players with valid answers.</strong></p>
         </div>
         <div class="full-bingo-note" style="margin-top:8px;">
-          <p>🔮 <strong>Full Bingo (300K Prize)</strong> results will be announced <strong>after Sports Fest ends</strong>, once the 2 prediction challenges are verified.</p>
+          <p>🏆 <strong>Full Bingo (300K Prize)</strong> results will be announced <strong>after Sports Fest ends</strong>, once the 2 prediction challenges are verified.</p>
         </div>
       </div>
     </div>
@@ -357,10 +354,6 @@ body { font-family:'Lexend',sans-serif; background:var(--bg); color:var(--text);
         <p>Your current prize tier</p>
         <strong id="successPrize">—</strong>
         <p class="note" id="successPrizeNote"></p>
-      </div>
-      <div class="success-ref">
-        Submission reference
-        <strong id="refCode">—</strong>
       </div>
     </div>
   </div>
@@ -659,7 +652,6 @@ function showSuccess(prizeInfo) {
   document.getElementById('successScreen').style.display = 'block';
   document.getElementById('successPrize').textContent     = prizeInfo.label || 'Submitted!';
   document.getElementById('successPrizeNote').textContent = prizeInfo.note  || '';
-  document.getElementById('refCode').textContent = 'KMS5-' + Date.now().toString(36).toUpperCase().slice(-6);
 }
 
 render();
